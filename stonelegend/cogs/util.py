@@ -39,7 +39,7 @@ class Utility(Cog):
 
         for poll_row in await self.bot.db.get_all_polls():
 
-            if datetime.utcnow().timestamp() > giveaway_row['finish_time']:
+            if datetime.utcnow().timestamp() > poll_row['finish_time']:
                 continue
 
             duration_delta = timedelta(seconds=round(poll_row['finish_time'] - datetime.utcnow().timestamp()))
