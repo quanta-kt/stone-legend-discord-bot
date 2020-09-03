@@ -285,6 +285,10 @@ class Utility(Cog):
 
         await self._schedule_or_call(future, finish_time)
 
+    @command(name='say', aliases=('echo',))
+    async def say(self, ctx: Context, *, text):
+        await ctx.send(text)
+
     def parse_duration(self, duration_string: str) -> timedelta:
         pattern = re.compile(r"^((?P<weeks>\d+)w)?((?P<days>\d+)d)?((?P<hours>\d+)h)?((?P<minutes>\d+)m)?((?P<seconds>\d+)s)?$", re.IGNORECASE)
         match = pattern.match(duration_string)
