@@ -28,6 +28,7 @@ class Moderation(Cog):
             await report_role()
             return
 
+        await ctx.message.delete()
         await ctx.send(role.mention, embed=Embed(
             title="Annoucement",
             description=announcement,
