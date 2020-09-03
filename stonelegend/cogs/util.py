@@ -287,6 +287,7 @@ class Utility(Cog):
 
     @command(name='say', aliases=('echo',))
     async def say(self, ctx: Context, *, text):
+        await ctx.message.delete()
         await ctx.send(text)
 
     def parse_duration(self, duration_string: str) -> timedelta:
