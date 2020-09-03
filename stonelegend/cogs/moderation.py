@@ -32,7 +32,7 @@ class Moderation(Cog):
             title="Annoucement",
             description=announcement,
             timestamp=datetime.utcnow()
-        ).set_author(name=str(ctx.author)))
+        ))
 
     @has_permissions(administrator=True)
     @command(name='announcerole')
