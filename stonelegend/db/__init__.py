@@ -34,6 +34,32 @@ SQL_CHECK_POLL = """
 SELECT EXISTS (SELECT * FROM polls WHERE channel_id = %s AND message_id = %s) AS result
 """
 
+SQL_CREATE_TABLE_GIVEAWAYS = """
+CREATE TABLE IF NOT EXISTS giveaways(
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    channel_id BIGINT NOT NULL,
+    message_id BIGINT NOT NULL,
+    prize VARCHAR(250) NOT NULL,
+    finish_time BIGINT NOT NULL,
+    author_id BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci;
+"""
+
+SQL_INSERT_GIVEAWAY = """
+INSERT INTO giveaways(channel_id, message_id, prize, finish_time, author_id)
+VALUES(%s, %s, %s, %s, %s)
+"""
+
+SQL_DELETE_GIVEAWAY = """
+DELETE FROM giveaways
+WHERE id = %s
+"""
+
+SQL_SELECT_ALL_GIVEAWAYS = """
+SELECT id, channel_id, message_id, finish_time, prize, author_id
+FROM giveaways
+"""
+
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
 
@@ -78,6 +104,7 @@ class Database:
         async with self._pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_CREATE_TABLE_POLLS)
+                await cur.execute(SQL_CREATE_TABLE_GIVEAWAYS)
 
     async def close(self) -> None:
         """Closes connection pool to the database and waits for it to close completely"""
@@ -134,4 +161,33 @@ class Database:
         async with self._pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_DELETE_POLL, (poll_id,))
+                await conn.commit()
+
+    @requires_connection
+    async def insert_giveaway(self, channel_id, message_id, prize, finish_time, author_id):
+        """Inserts giveaway to the db"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_INSERT_GIVEAWAY, (channel_id, message_id, prize, finish_time, author_id))
+                await conn.commit()
+
+        return cur.lastrowid
+
+    @requires_connection
+    async def get_all_giveaways(self):
+        """Fetches and returns all active giveaways from db"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_ALL_GIVEAWAYS)
+                return await cur.fetchall()
+
+    @requires_connection
+    async def delete_giveaway(self, giveaway_id):
+        """Deletes the giveaway belonging to passed giveaway ID"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_DELETE_GIVEAWAY, (giveaway_id,))
                 await conn.commit()
