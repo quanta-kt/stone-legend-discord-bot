@@ -173,7 +173,8 @@ class Utility(Cog):
                 title="Giveaway!",
                 description=f"{giveaway_row['prize']}\n\n"
                     + f"Winner: {winner}\n"
-                    + f"Hosted by: <@{giveaway_row['author_id']}>"
+                    + f"Hosted by: <@{giveaway_row['author_id']}>",
+                color=Color.green()
             ))
 
         finally:
