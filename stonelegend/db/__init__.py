@@ -60,6 +60,24 @@ SELECT id, channel_id, message_id, finish_time, prize, author_id
 FROM giveaways
 """
 
+SQL_CREATE_TABLE_ANNOUNCE_ROLES = """
+CREATE TABLE IF NOT EXISTS annouceroles(
+    guild_id BIGINT PRIMARY KEY,
+    role_id BIGINT NOT NULL
+)
+"""
+
+SQL_SELECT_ANNOUNCE_ROLE = """
+SELECT role_id FROM annouceroles
+WHERE guild_id = %s
+"""
+
+SQL_INSERT_ANNOUCE_ROLE = """
+INSERT INTO annouceroles(guild_id, role_id)
+VALUES(%(guild_id)s, %(role_id)s)
+ON DUPLICATE KEY UPDATE role_id = %(role_id)s
+"""
+
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
 
@@ -105,6 +123,7 @@ class Database:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_CREATE_TABLE_POLLS)
                 await cur.execute(SQL_CREATE_TABLE_GIVEAWAYS)
+                await cur.execute(SQL_CREATE_TABLE_ANNOUNCE_ROLES)
 
     async def close(self) -> None:
         """Closes connection pool to the database and waits for it to close completely"""
@@ -191,3 +210,22 @@ class Database:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_DELETE_GIVEAWAY, (giveaway_id,))
                 await conn.commit()
+
+    @requires_connection
+    async def update_annouce_role(self, guild_id, role_id):
+        """Inserts or updates annoucement role id for the guild"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_INSERT_ANNOUCE_ROLE,
+                    dict(guild_id=guild_id, role_id=role_id))
+                await conn.commit()
+
+    @requires_connection
+    async def get_announcement_role(self, guild_id):
+        """Fetches and returns the annoucement role ID for given guild ID"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_ANNOUNCE_ROLE, (guild_id,))
+                return None if cur.rowcount < 1 else (await cur.fetchone())['role_id']
