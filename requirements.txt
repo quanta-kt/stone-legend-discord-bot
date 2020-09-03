@@ -1,0 +1,4 @@
+discord.py==1.4.1
+aiomysql==0.0.20
+aioscheduler==1.4.2
+emoji==0.6.0

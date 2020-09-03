@@ -1,0 +1,8 @@
+# Configs
+/sql_config.json
+/admins.json
+
+# IDE / environment
+/venv/**
+/.vscode/**
+**/__pycache__/**
