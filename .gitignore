@@ -2,6 +2,10 @@
 /sql_config.json
 /admins.json
 
+# Heroku
+/Procfile
+/runtime.txt
+
 # IDE / environment
 /venv/**
 /.vscode/**
