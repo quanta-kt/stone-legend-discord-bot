@@ -1,6 +1,6 @@
 import aiomysql
 from functools import wraps
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Optional
 
 
 SQL_CREATE_TABLE_POLLS = """
@@ -78,6 +78,28 @@ VALUES(%(guild_id)s, %(role_id)s)
 ON DUPLICATE KEY UPDATE role_id = %(role_id)s
 """
 
+SQL_CREATE_TABLE_REACT_ROLES = """
+CREATE TABLE IF NOT EXISTS reactroles(
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    guild_id BIGINT NOT NULL,
+    channel_id BIGINT NOT NULL,
+    message_id BIGINT NOT NULL,
+    role_id BIGINT NOT NULL,
+    emoji VARCHAR(40) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_general_ci
+"""
+
+SQL_INSERT_REACT_ROLE = """
+INSERT INTO reactroles(guild_id, channel_id, message_id, role_id, emoji)
+VALUES(%s, %s, %s, %s, %s)
+"""
+
+SQL_SELECT_ROLE_ID_FOR_REACTION = """
+SELECT role_id FROM reactroles
+WHERE guild_id = %s AND channel_id = %s AND message_id = %s AND emoji = %s COLLATE utf8mb4_bin
+"""
+
+
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
 
@@ -124,6 +146,7 @@ class Database:
                 await cur.execute(SQL_CREATE_TABLE_POLLS)
                 await cur.execute(SQL_CREATE_TABLE_GIVEAWAYS)
                 await cur.execute(SQL_CREATE_TABLE_ANNOUNCE_ROLES)
+                await cur.execute(SQL_CREATE_TABLE_REACT_ROLES)
 
     async def close(self) -> None:
         """Closes connection pool to the database and waits for it to close completely"""
@@ -229,3 +252,25 @@ class Database:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_SELECT_ANNOUNCE_ROLE, (guild_id,))
                 return None if cur.rowcount < 1 else (await cur.fetchone())['role_id']
+
+    @requires_connection
+    async def insert_reaction_role(self, guild_id: int, channel_id: int,
+        message_id: int, role_id: int, emoji_str: str):
+        """Inserts a reaction role into db"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:        
+                await cur.execute(SQL_INSERT_REACT_ROLE,
+                    (guild_id, channel_id, message_id, role_id, emoji_str))
+                await conn.commit()
+
+    @requires_connection
+    async def get_role_for_reaction(self, guild_id, channel_id, message_id, emoji_str) -> Optional[int]:
+        """Fetches and returns role id for given reaction parameters
+        Returns None if the reaction has no role registered"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_ROLE_ID_FOR_REACTION,
+                    (guild_id, channel_id, message_id, emoji_str))
+                return (await cur.fetchone())['role_id'] if cur.rowcount > 0 else None
