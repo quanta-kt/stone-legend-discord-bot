@@ -70,7 +70,6 @@ class Moderation(Cog):
         role_id = await self.bot.db.get_role_for_reaction(payload.guild_id,
             payload.channel_id, payload.message_id, str(payload.emoji))
         if role_id is None:
-            print('Not a rr')
             return # Not a reaction role
 
         role = guild.get_role(role_id)
@@ -95,14 +94,11 @@ class Moderation(Cog):
         role_id = await self.bot.db.get_role_for_reaction(payload.guild_id,
             payload.channel_id, payload.message_id, str(payload.emoji))
         if role_id is None:
-            print('Not a rr')
             return # Not a reaction role
 
         role = guild.get_role(role_id)
         if role is not None:
             await member.remove_roles(role)
-        else:
-            print('Cant get role')
 
     @has_permissions(administrator=True)
     @command(name='selfroles', aliases=('rr', 'reactionroles'))
