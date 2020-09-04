@@ -1,5 +1,5 @@
 from discord.ext.commands import(Context, Cog, command, has_permissions,
-    BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument)
+    BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument, CommandError)
 from discord import Role, Embed, Color, TextChannel, Reaction, User, Member, Emoji
 from discord import utils
 from datetime import datetime
@@ -10,7 +10,7 @@ import re
 from ..bot import StoneLegendBot
 
 
-class ParseError(Exception):
+class ParseError(CommandError):
     """Exception thrown when a custom Parser fails"""
 
     def __init__(self, readable_error):
@@ -104,6 +104,7 @@ class Moderation(Cog):
         else:
             print('Cant get role')
 
+    @has_permissions(administrator=True)
     @command(name='selfroles', aliases=('rr', 'reactionroles'))
     async def create_self_roles(self, ctx: Context, channel: TextChannel, *, entries):
         """Creates a self roles message
