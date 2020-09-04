@@ -165,7 +165,7 @@ class Moderation(Cog):
 
         if isinstance(error, MissingRequiredArgument):
             await ctx.send(embed=Embed(title="Missing argument",
-                description=f"Missing required argument: **{error.param}**"))
+                description=f"Missing required argument: **{error.param.name}**"))
             return
 
         if isinstance(error, BadArgument):
