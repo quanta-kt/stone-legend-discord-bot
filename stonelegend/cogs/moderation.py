@@ -111,7 +111,7 @@ class Moderation(Cog):
         mapping = await self.parse_self_roles_list(ctx, entries)
 
         # Build and send message
-        roles_list = "\n".join(f"{reactable} {role.mention}\n{desc}" \
+        roles_list = "\n\n".join(f"{reactable} {role.mention}\n{desc}" \
             for role, reactable, desc in mapping)
         target_message = await channel.send(embed=Embed(title="Role Menu",
             description=roles_list))
