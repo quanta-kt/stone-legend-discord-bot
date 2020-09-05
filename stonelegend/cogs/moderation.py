@@ -187,7 +187,7 @@ class Moderation(Cog):
     async def set_welcome_channel_error(self, ctx: Context, error: CommandError):
         
         if isinstance(error, BadArgument):
-            ctx.send(embed=Embed(description="Can't find the specified channel",
+            await ctx.send(embed=Embed(description="Can't find the specified channel",
                 color=Color.orange()))
 
             return
