@@ -175,5 +175,29 @@ class Moderation(Cog):
 
         raise error
 
+    @has_permissions(administrator=True)
+    @command(name='welcome', aliases=('wc',))
+    async def set_welcome_channel(self, ctx: Context, channel: TextChannel):
+        """Sets the channel where welcome messages are sent"""
+
+        await self.bot.db.insert_welcome_channel(ctx.guild.id, channel.id)
+        await ctx.send('Updated')
+    
+    async def set_welcome_channel_error(self, ctx: Context, error: CommandError):
+        
+        if isinstance(error, BadArgument):
+            ctx.send(emed=Embed(description="Can't find the specified channel",
+                color=Color.orange()))
+
+            return
+
+        if isinstance(error, MissingRequiredArgument):
+            await ctx.send(embed=Embed(title="Missing argument",
+                description=f"Missing required argument: **{error.param.name}**"))
+            return
+
+        raise error
+
+
 def setup(bot: StoneLegendBot):
     bot.add_cog(Moderation(bot))

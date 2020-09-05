@@ -99,6 +99,21 @@ SELECT role_id FROM reactroles
 WHERE guild_id = %s AND channel_id = %s AND message_id = %s AND emoji = %s COLLATE utf8mb4_bin
 """
 
+SQL_CREATE_TABLE_WELCOME_CHANNELS = """
+CREATE TABLE IF NOT EXISTS welcomechannels(
+    guild_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    channel_id BIGINT AUTO_INCREMENT PRIMARY KEY
+)
+"""
+
+SQL_INSERT_WELCOME_CHANNEL = """
+INSERT INTO welcomechannels(guild_id, channel_id)
+VALUES(%s, %s)
+"""
+
+SQL_SELECT_WELCOME_CHANNEL = """
+SELECT channel_id FROM welcomechannelS WHERE guild_id = %s
+"""
 
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
@@ -147,6 +162,7 @@ class Database:
                 await cur.execute(SQL_CREATE_TABLE_GIVEAWAYS)
                 await cur.execute(SQL_CREATE_TABLE_ANNOUNCE_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_REACT_ROLES)
+                await cur.execute(SQL_CREATE_TABLE_WELCOME_CHANNELS)
 
     async def close(self) -> None:
         """Closes connection pool to the database and waits for it to close completely"""
@@ -274,3 +290,23 @@ class Database:
                 await cur.execute(SQL_SELECT_ROLE_ID_FOR_REACTION,
                     (guild_id, channel_id, message_id, emoji_str))
                 return (await cur.fetchone())['role_id'] if cur.rowcount > 0 else None
+
+    @requires_connection
+    async def insert_welcome_channel(self, guild_id: int, channel_id: int):
+        """Inserts a welcome channel into db"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:        
+                await cur.execute(SQL_INSERT_WELCOME_CHANNEL,
+                    (guild_id, channel_id))
+                await conn.commit()
+
+    @requires_connection
+    async def get_welcome_channel(self, guild_id):
+        """Fetches and returns the welcome channel ID for given guild ID.
+        Returns None if not set"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_ANNOUNCE_ROLE, (guild_id,))
+                return None if cur.rowcount < 1 else (await cur.fetchone())['channel_id']
