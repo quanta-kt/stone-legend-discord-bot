@@ -183,6 +183,7 @@ class Moderation(Cog):
         await self.bot.db.insert_welcome_channel(ctx.guild.id, channel.id)
         await ctx.send('Updated')
     
+    @set_welcome_channel.error
     async def set_welcome_channel_error(self, ctx: Context, error: CommandError):
         
         if isinstance(error, BadArgument):
