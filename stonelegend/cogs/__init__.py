@@ -1,4 +1,4 @@
-from . import links, info, util, admin, moderation
+from . import links, info, util, admin, moderation, welcome
 
 
 all_extensions = [
@@ -6,7 +6,8 @@ all_extensions = [
     info,
     util,
     admin,
-    moderation
+    moderation,
+    welcome,
 ]
 
 __all__ = [
