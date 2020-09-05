@@ -102,7 +102,7 @@ WHERE guild_id = %s AND channel_id = %s AND message_id = %s AND emoji = %s COLLA
 SQL_CREATE_TABLE_WELCOME_CHANNELS = """
 CREATE TABLE IF NOT EXISTS welcomechannels(
     guild_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    channel_id BIGINT AUTO_INCREMENT PRIMARY KEY
+    channel_id BIGINT NOT NULL
 )
 """
 
@@ -112,7 +112,7 @@ VALUES(%s, %s)
 """
 
 SQL_SELECT_WELCOME_CHANNEL = """
-SELECT channel_id FROM welcomechannelS WHERE guild_id = %s
+SELECT channel_id FROM welcomechannels WHERE guild_id = %s
 """
 
 def requires_connection(decorated):
@@ -163,6 +163,7 @@ class Database:
                 await cur.execute(SQL_CREATE_TABLE_ANNOUNCE_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_REACT_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_WELCOME_CHANNELS)
+                await conn.commit()
 
     async def close(self) -> None:
         """Closes connection pool to the database and waits for it to close completely"""
@@ -308,5 +309,5 @@ class Database:
 
         async with self._pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute(SQL_SELECT_ANNOUNCE_ROLE, (guild_id,))
+                await cur.execute(SQL_SELECT_WELCOME_CHANNEL, (guild_id,))
                 return None if cur.rowcount < 1 else (await cur.fetchone())['channel_id']
