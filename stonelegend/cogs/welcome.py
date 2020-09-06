@@ -38,7 +38,7 @@ class Welcome(Cog):
             pfp_data, bg_data, username)
 
     @Cog.listener()
-    async def on_member_join(self, ctx: Context, member: Member):
+    async def on_member_join(self, member: Member):
         """Listens to member join event to welcome them"""
 
         target_channel_id = await self.bot.db.get_welcome_channel(member.guild.id)
