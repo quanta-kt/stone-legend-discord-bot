@@ -108,7 +108,8 @@ CREATE TABLE IF NOT EXISTS welcomechannels(
 
 SQL_INSERT_WELCOME_CHANNEL = """
 INSERT INTO welcomechannels(guild_id, channel_id)
-VALUES(%s, %s)
+VALUES(%(guild_id)s, %(channel_id)s)
+ON DUPLICATE KEY UPDATE channel_id = %(channel_id)s
 """
 
 SQL_SELECT_WELCOME_CHANNEL = """
@@ -293,13 +294,13 @@ class Database:
                 return (await cur.fetchone())['role_id'] if cur.rowcount > 0 else None
 
     @requires_connection
-    async def insert_welcome_channel(self, guild_id: int, channel_id: int):
+    async def update_welcome_channel(self, guild_id: int, channel_id: int):
         """Inserts a welcome channel into db"""
 
         async with self._pool.acquire() as conn:
             async with conn.cursor() as cur:        
                 await cur.execute(SQL_INSERT_WELCOME_CHANNEL,
-                    (guild_id, channel_id))
+                    dict(guild_id=guild_id, channel_id=channel_id))
                 await conn.commit()
 
     @requires_connection
