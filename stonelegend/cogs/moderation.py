@@ -128,7 +128,7 @@ class Moderation(Cog):
 
     @has_permissions(manage_messages=True)
     @bot_has_permissions(manage_messages=True)
-    @group(name='purge')
+    @group(name='purge', invoke_without_command=True)
     async def purge(self, ctx: Context, count: int = 10):
         """Deletes multiple messages from the current channel.
         You must have Manage messages permission."""
