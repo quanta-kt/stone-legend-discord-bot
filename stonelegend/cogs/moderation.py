@@ -175,12 +175,12 @@ class Moderation(Cog):
 
         raise error
 
-    @has_permissions(administrator=True)
+    #@has_permissions(administrator=True)
     @command(name='welcome', aliases=('wc',))
     async def set_welcome_channel(self, ctx: Context, channel: TextChannel):
         """Sets the channel where welcome messages are sent"""
 
-        await self.bot.db.insert_welcome_channel(ctx.guild.id, channel.id)
+        await self.bot.db.update_welcome_channel(ctx.guild.id, channel.id)
         await ctx.send('Updated')
     
     @set_welcome_channel.error
