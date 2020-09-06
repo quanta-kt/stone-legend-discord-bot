@@ -37,8 +37,7 @@ class Welcome(Cog):
         return await self.bot.loop.run_in_executor(self.thread_pool, self._generate_welcome_image,
             pfp_data, bg_data, username)
 
-    #@Cog.listener()
-    @command('_welc')
+    @Cog.listener()
     async def on_member_join(self, ctx: Context, member: Member):
         """Listens to member join event to welcome them"""
 
