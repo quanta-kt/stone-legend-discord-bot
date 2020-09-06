@@ -175,7 +175,7 @@ class Moderation(Cog):
 
         raise error
 
-    #@has_permissions(administrator=True)
+    @has_permissions(administrator=True)
     @command(name='welcome', aliases=('wc',))
     async def set_welcome_channel(self, ctx: Context, channel: TextChannel):
         """Sets the channel where welcome messages are sent"""
