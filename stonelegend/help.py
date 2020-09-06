@@ -1,5 +1,5 @@
 from discord import Embed, Color
-from discord.ext.commands import HelpCommand
+from discord.ext.commands import HelpCommand, Group, Command
 
 
 class CustomHelpCommand(HelpCommand):
@@ -9,9 +9,14 @@ class CustomHelpCommand(HelpCommand):
         return Embed(color=Color.green(), **kwargs) \
             .set_thumbnail(url="https://stonelegend.net/img/logo.png")
 
-    def get_command_signature(self, command):
+    def get_command_signature(self, command: Command, group: str = '') -> str:
         sig = (' ' + command.signature).rstrip()
-        return f'`/{command.name}{sig}`'
+        group = group + ' ' if group else ''
+        return f'/{group}{command.name}{sig}'
+
+    def get_group_signature(self, group: Group) -> str:
+        sig = (' ' + group.signature).rstrip()
+        return f"/{group.name}{sig}"
 
     async def command_not_found(self, string):
         await self.get_destination().send(embed=Embed(
@@ -43,7 +48,17 @@ class CustomHelpCommand(HelpCommand):
                 inline=True)
         await self.get_destination().send(embed=embed)
 
-    async def send_command_help(self, command):
+    async def send_group_help(self, group: Group):
+        embed = self.get_embed(title=self.get_group_signature(group),
+            description=group.help)
+
+        for command in group.commands:
+            embed.add_field(name=self.get_command_signature(command, group.name),
+                value=command.help)
+
+        await self.get_destination().send(embed=embed)
+
+    async def send_command_help(self, command: Command):
         embed = self.get_embed(title=self.get_command_signature(command),
             description=command.help) \
             .add_field(

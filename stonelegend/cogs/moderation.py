@@ -1,6 +1,6 @@
 from discord.ext.commands import(Context, Cog, command, has_permissions,
     BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument, CommandError,
-    Converter)
+    Converter, bot_has_permissions, group)
 from discord import Role, Embed, Color, TextChannel, Reaction, User, Member, Emoji
 from discord import utils
 from datetime import datetime
@@ -125,6 +125,47 @@ class Moderation(Cog):
 
         await self.bot.db.update_welcome_channel(ctx.guild.id, channel.id)
         await ctx.send('Updated')
+
+    @has_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
+    @group(name='purge')
+    async def purge(self, ctx: Context, count: int = 10):
+        """Deletes multiple messages from the current channel.
+        You must have Manage messages permission."""
+
+        if ctx.invoked_subcommand is None:
+            async for message in ctx.channel.history(limit=count):
+                await message.delete()
+
+    @has_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
+    @purge.command(name='user')
+    async def purge_user(self, ctx: Context, user: Member, count: int = 10):
+        """Delete messages from the specified user"""
+
+        async for message in ctx.channel.history(limit=count):
+            if message.author == user:
+                await message.delete()
+
+    @has_permissions(kick_members=True)
+    @bot_has_permissions(kick_members=True)
+    @command(name='kick')
+    async def kick_user(self, ctx: Context, user: Member, *, reason: str = None):
+        """Kicks a member from the server.
+        You must have kick members permission"""
+
+        await user.kick(reason=reason)
+        await ctx.channel.send(f'{user} has been kicked\nReason: {reason}')
+
+    @has_permissions(ban_members=True)
+    @bot_has_permissions(ban_members=True)
+    @command(name='ban')
+    async def ban_user(self, ctx: Context, user: Member, *, reason: str = None):
+        """Kicks a member from the server.
+        You must have kick members permission"""
+
+        await user.ban(reason=reason)
+        await ctx.channel.send(f'{user} has been banned\nReason: {reason}')
 
 
 def setup(bot: StoneLegendBot):
