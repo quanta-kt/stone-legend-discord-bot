@@ -8,46 +8,47 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="drawing.svg"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   id="svg8"
-   version="1.1"
-   viewBox="0 0 132.29167 66.145835"
+   width="500"
    height="250"
-   width="500">
+   viewBox="0 0 132.29167 66.145835"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="welcome_template.svg">
   <defs
      id="defs2">
     <clipPath
-       id="clipPath106"
-       clipPathUnits="userSpaceOnUse">
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath106">
       <circle
-         r="19.84375"
-         cy="25.135416"
-         cx="66.145836"
+         style="fill:#333333;fill-rule:evenodd;stroke-width:0.210014"
          id="circle108"
-         style="fill:#333333;fill-rule:evenodd;stroke-width:0.210014" />
+         cx="66.145836"
+         cy="25.135416"
+         r="19.84375" />
     </clipPath>
   </defs>
   <sodipodi:namedview
-     inkscape:window-maximized="1"
-     inkscape:window-y="23"
-     inkscape:window-x="1680"
-     inkscape:window-height="721"
-     inkscape:window-width="1366"
-     units="px"
-     showgrid="false"
-     inkscape:document-rotation="0"
-     inkscape:current-layer="layer1"
-     inkscape:document-units="mm"
-     inkscape:cy="173.20666"
-     inkscape:cx="138.08128"
-     inkscape:zoom="1.0610557"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0.0"
-     borderopacity="1.0"
-     bordercolor="#666666"
+     showguides="false"
+     id="base"
      pagecolor="#ffffff"
-     id="base" />
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.0610557"
+     inkscape:cx="138.08128"
+     inkscape:cy="173.20666"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1680"
+     inkscape:window-height="1003"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -56,53 +57,54 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     id="layer1"
+     inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     inkscape:label="Layer 1">
-    <rect
-       y="0"
-       x="0"
-       height="66.145836"
-       width="132.29167"
-       id="rect48"
-       style="fill:#1a1a1a;stroke-width:0.226971" />
+     id="layer1">
     <image
-       transform="matrix(0.86666675,0,0,0.86666668,8.8194384,0.70555548)"
-       clip-path="url(#clipPath106)"
-       id="image96"
-       xlink:href="data:image/png;base64,%s
+       id="image49"
+       xlink:href="data:image/jpeg;base64,%(bg)s
 "
        preserveAspectRatio="none"
-       height="39.6875"
-       width="39.6875"
+       height="66.145836"
+       width="132.29167"
+       x="0"
+       y="0" />
+    <image
+       y="5.2916665"
        x="46.302082"
-       y="5.2916665" />
+       width="39.6875"
+       height="39.6875"
+       preserveAspectRatio="none"
+       xlink:href="data:image/png;base64,%(pfp)s "
+       id="image96"
+       clip-path="url(#clipPath106)"
+       transform="matrix(0.86666675,0,0,0.86666668,8.8194384,0.70555548)" />
     <text
-       id="text46"
-       y="52.324337"
-       x="66.352203"
+       xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       xml:space="preserve"><tspan
-         sodipodi:role="line"
-         style="text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.264583"
-         y="52.324337"
+       x="66.352203"
+       y="52.324337"
+       id="text46"><tspan
+         id="tspan44"
          x="66.352203"
-         id="tspan44">Welcome</tspan></text>
+         y="52.324337"
+         style="text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.264583"
+         sodipodi:role="line">Welcome</tspan></text>
     <text
-       id="text114"
-       y="60.158283"
-       x="66.131714"
+       xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:5.29167px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       xml:space="preserve"><tspan
-         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.264583"
-         y="60.158283"
-         x="66.131714"
+       x="66.131714"
+       y="60.158283"
+       id="text114"><tspan
+         sodipodi:role="line"
          id="tspan112"
-         sodipodi:role="line">%s</tspan></text>
+         x="66.131714"
+         y="60.158283"
+         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.264583">%(username)s</tspan></text>
   </g>
 </svg>
