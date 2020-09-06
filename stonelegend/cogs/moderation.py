@@ -1,20 +1,14 @@
 from discord.ext.commands import(Context, Cog, command, has_permissions,
-    BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument, CommandError)
+    BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument, CommandError,
+    Converter)
 from discord import Role, Embed, Color, TextChannel, Reaction, User, Member, Emoji
 from discord import utils
 from datetime import datetime
 from typing import Tuple, Union
-import emoji
-import re
 
 from ..bot import StoneLegendBot
+from ..converters import SelfRolesListConverter
 
-
-class ParseError(CommandError):
-    """Exception thrown when a custom Parser fails"""
-
-    def __init__(self, readable_error):
-        self.readable_error = readable_error
 
 class Moderation(Cog):
     """Server moderation and management commands"""
@@ -102,78 +96,27 @@ class Moderation(Cog):
 
     @has_permissions(administrator=True)
     @command(name='selfroles', aliases=('rr', 'reactionroles'))
-    async def create_self_roles(self, ctx: Context, channel: TextChannel, *, entries):
+    async def create_self_roles(self, ctx: Context, channel: TextChannel, *,
+        entries: SelfRolesListConverter):
         """Creates a self roles message
         entries must be triplets of role, emoji, description separated by space
         Example: selfroles #RolesChannel @CoolRole \N{smiling face with sunglasses} A cool role
         @Evil \N{smiling face with horns} Evil role"""
 
-        mapping = await self.parse_self_roles_list(ctx, entries)
-
         # Build and send message
         roles_list = "\n\n".join(f"{reactable} {role.mention}\n{desc}" \
-            for role, reactable, desc in mapping)
+            for role, reactable, desc in entries)
         target_message = await channel.send(embed=Embed(title="Role Menu",
             description=roles_list))
 
         await ctx.send('Creating...')
 
-        for role, reactable, _ in mapping:
+        for role, reactable, _ in entries:
             await self.bot.db.insert_reaction_role(ctx.guild.id,
                 target_message.channel.id, target_message.id, role.id, str(reactable))
             await target_message.add_reaction(reactable)
 
         await ctx.send('Reaction roles set-up!')
-
-    async def parse_self_roles_list(self, ctx: Context, raw_list: str) -> Tuple[Tuple[Role, Union[str, Emoji], str], ...]:
-        """Parses and returns the user inputed list from `selfroles` command.
-        Raises ParseError on failure."""
-
-        async def convert_to_emoji(emoji_str) -> Union[Emoji, str]:
-            try:
-                return await EmojiConverter().convert(ctx, emoji_str)
-            except BadArgument:
-                if emoji_str in emoji.UNICODE_EMOJI:
-                    return emoji_str
-            raise ParseError(f"{emoji_str} is not a valid emoji")
-
-        async def convert_to_role(role_str) -> Role:
-            try:
-                return await RoleConverter().convert(ctx, role_str)
-            except BadArgument:
-                raise ParseError(f"{role_str} is not a valid role")
-
-        async def parse_row(line):
-            row = re.split(' +', line.strip(), maxsplit=2)
-            try:
-                role_str, emoji_str, desc = row
-            except ValueError:
-                raise ParseError(f"{' '.join(row)} is not a valid pair of role-emoji-description")
-            return (await convert_to_role(role_str), await convert_to_emoji(emoji_str), desc)
-
-        return tuple([await parse_row(line) for line in raw_list.splitlines() if line])
-
-    @create_self_roles.error
-    async def create_self_roles_error(self, ctx: Context, error: Exception):
-
-        if isinstance(error, ParseError):
-            await ctx.send(embed=Embed(
-                title="Invalid arguments",
-                description=error.readable_error,
-                color=Color.orange()))
-            return
-
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(embed=Embed(title="Missing argument",
-                description=f"Missing required argument: **{error.param.name}**"))
-            return
-
-        if isinstance(error, BadArgument):
-            await ctx.send(embed=Embed(description="Can't find the specified channel",
-                color=Color.orange))
-            return
-
-        raise error
 
     @has_permissions(administrator=True)
     @command(name='welcome', aliases=('wc',))
@@ -182,22 +125,6 @@ class Moderation(Cog):
 
         await self.bot.db.update_welcome_channel(ctx.guild.id, channel.id)
         await ctx.send('Updated')
-    
-    @set_welcome_channel.error
-    async def set_welcome_channel_error(self, ctx: Context, error: CommandError):
-        
-        if isinstance(error, BadArgument):
-            await ctx.send(embed=Embed(description="Can't find the specified channel",
-                color=Color.orange()))
-
-            return
-
-        if isinstance(error, MissingRequiredArgument):
-            await ctx.send(embed=Embed(title="Missing argument",
-                description=f"Missing required argument: **{error.param.name}**"))
-            return
-
-        raise error
 
 
 def setup(bot: StoneLegendBot):

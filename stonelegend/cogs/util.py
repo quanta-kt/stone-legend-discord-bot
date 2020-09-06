@@ -1,16 +1,16 @@
 from discord.ext.commands import Context, command, Cog
 from discord.ext.tasks import loop
-from discord import Embed, Color, Message, utils, NotFound, Emoji, Reaction, User, Member
-import re
+from discord import(Embed, Color, Message, utils, NotFound,
+    Emoji, Reaction, User, Member, Forbidden)
 from datetime import timedelta, datetime
 import aioscheduler
 import asyncio
 from typing import Union
-import emoji
 import random
 
 from .. import StoneLegendBot
 from ..db import Database
+from ..converters import ReactableConverter, TimeDeltaConverter
 
 
 class Utility(Cog):
@@ -58,9 +58,10 @@ class Utility(Cog):
                 title="New Poll",
                 description=poll_row['question']
                     + "\n\n"
-                    + f"Time left: {duration_delta}",
+                    + f"Time left: {duration_delta}"
+                    + f"React with a {emoji1} or {emoji2}",
                 color=Color.green()
-            ).set_footer(text=f"React with a {emoji1} or {emoji2}")
+            )
 
             try:
                 await message.edit(embed=embed)
@@ -181,43 +182,22 @@ class Utility(Cog):
             await self.bot.db.delete_giveaway(giveaway_row['id'])
             
     @command(name='poll')
-    async def poll(self, ctx: Context, duration: str,
-        emoji1: Union[Emoji, str], emoji2: Union[Emoji, str], *, question: str):
+    async def poll(self, ctx: Context, duration: TimeDeltaConverter,
+        emoji1: ReactableConverter, emoji2: ReactableConverter, *, question: str):
         """Posts a poll"""
 
-        # Validate emojis
-        async def ensure_emoji(*args):
-            for emo in args:
-                if not isinstance(emo, Emoji) and not emo in emoji.UNICODE_EMOJI:
-                    await ctx.send(embed=Embed(
-                        description=f"{emo} is not a valid emoji.",
-                        color=Color.orange()
-                    ))
-                    return False
-            return True
+        try:
+            await ctx.message.delete()
+        except Forbidden:
+            pass
 
-        if not await ensure_emoji(emoji1, emoji2):
-            return
+        finish_time = datetime.utcnow() + duration
 
-        # Parse and validate duration
-        duration_delta = self.parse_duration(duration)
-        if duration_delta is None:
-            await ctx.send(embed=Embed(
-                description='Invalid duration!',
-                color=Color.orange()
-            ))
-
-            return
-
-        await ctx.message.delete()
-
-        finish_time = datetime.utcnow() + duration_delta
-        
         embed = Embed(
             title="New Poll",
             description=question
                 + "\n\n"
-                + f"Time left: {duration_delta}",
+                + f"Time left: {duration}",
             color=Color.orange()
         ).set_footer(text=f"React with a {emoji1} or {emoji2}")
 
@@ -246,25 +226,15 @@ class Utility(Cog):
         await self._schedule_or_call(future, finish_time)
 
     @command(name='giveaway', aliases=('gw',))
-    async def start_giveaway(self, ctx: Context, duration: str, *, prize):
+    async def start_giveaway(self, ctx: Context, duration: TimeDeltaConverter, *, prize: str):
         """Starts a give away"""
 
-        # Parse and validate duration
-        duration_delta = self.parse_duration(duration)
-        if duration_delta is None:
-            await ctx.send(embed=Embed(
-                description='Invalid duration!',
-                color=Color.orange()
-            ))
-
-            return
-
-        finish_time = datetime.utcnow() + duration_delta
+        finish_time = datetime.utcnow() + duration
         
         embed = Embed(
             title="Giveaway!",
             description=f"{prize}\n\n"
-                + f"*Time left: {duration_delta}*\n"
+                + f"*Time left: {duration}*\n"
                 + f"*Hosted by: {ctx.author.mention}*",
             color=Color.orange()
         ).set_footer(text="React with \N{party popper} to enter")
@@ -286,21 +256,12 @@ class Utility(Cog):
         await self._schedule_or_call(future, finish_time)
 
     @command(name='say', aliases=('echo',))
-    async def say(self, ctx: Context, *, text):
-        await ctx.message.delete()
+    async def say(self, ctx: Context, *, text: str):
+        try:
+            await ctx.message.delete()
+        except Forbidden:
+            pass
         await ctx.send(text)
-
-    def parse_duration(self, duration_string: str) -> timedelta:
-        pattern = re.compile(r"^((?P<weeks>\d+)w)?((?P<days>\d+)d)?((?P<hours>\d+)h)?((?P<minutes>\d+)m)?((?P<seconds>\d+)s)?$", re.IGNORECASE)
-        match = pattern.match(duration_string)
-        if match is None:
-            return None
-
-        # Get groups and map None to 0
-        duration_dict = {key: int(val) if val is not None else 0 for key, val in match.groupdict().items()}
-
-        # Build and return timedelta
-        return timedelta(**duration_dict)
 
 
 def setup(bot: StoneLegendBot):
