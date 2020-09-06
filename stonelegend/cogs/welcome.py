@@ -1,5 +1,5 @@
 from discord import Member, File
-from discord.ext.commands import Cog, command, Context
+from discord.ext.commands import Cog, Context
 import aiohttp
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
