@@ -1,4 +1,4 @@
-from discord.ext.commands import Cog, Context, check, command
+from discord.ext.commands import Cog, Context, check, command, errors
 import json
 
 from ..bot import StoneLegendBot
@@ -13,7 +13,9 @@ def requires_admin():
     """Decorator for commands that require to be an admin"""
 
     async def predicate(ctx: Context):
-        return ctx.author.id in admins
+        if ctx.author.id in admins:
+            raise errors.CommandNotFound()
+        return True
     return check(predicate)
 
 
