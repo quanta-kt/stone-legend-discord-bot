@@ -1,7 +1,8 @@
 from discord.ext.commands import(Context, Cog, command, has_permissions,
     BadArgument, RoleConverter, EmojiConverter, MissingRequiredArgument, CommandError,
     Converter, bot_has_permissions, group, CheckFailure)
-from discord import Role, Embed, Color, TextChannel, Reaction, User, Member, Emoji, NotFound
+from discord import(Role, Embed, Color, TextChannel, Reaction, User, Member, Emoji, NotFound,
+    Permissions, PermissionOverwrite)
 from discord import utils
 from datetime import datetime
 from typing import Tuple, Union
@@ -196,6 +197,30 @@ class Moderation(Cog):
 
         await user.ban(reason=reason)
         await ctx.channel.send(f'{user} has been banned\nReason: {reason}')
+
+    @has_permissions(manage_messages=True)
+    @bot_has_permissions(manage_messages=True)
+    @bot_has_permissions(manage_roles=True)
+    @command(name='mute')
+    async def mute_user(self, ctx: Context, user: Member, *, reason: str = None):
+        """Mutes a user"""
+
+        if ctx.author.top_role <= user.top_role:
+            raise CheckFailure('Your role is not high enough to mute that person!')
+        if user == ctx.bot.user:
+            raise CheckFailure('Not gonna mute myself, sorry.')
+
+        mute_role = utils.get(ctx.guild.roles, name="Muted")
+        if mute_role is None:
+            mute_role = await ctx.guild.create_role(name="Muted")
+            for channel in ctx.guild.channels:
+                overwrites = channel.overwrites
+                overwrites[mute_role] = PermissionOverwrite(send_messages=False,
+                    add_reactions=False)
+                await channel.edit(overwrites=overwrites)
+
+        await user.add_roles(mute_role)
+        await ctx.channel.send(f'{user.mention} has been muted\nReason: {reason}')
 
 
 def setup(bot: StoneLegendBot):
