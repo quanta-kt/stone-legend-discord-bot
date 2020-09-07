@@ -28,7 +28,7 @@ class CustomHelpCommand(HelpCommand):
         embed = self.get_embed().set_author(name='List of categories and commands')
 
         for cog, commands in mapping.items():
-            if cog is not None and commands:
+            if cog is not None and (commands := [c for c in commands if not c.hidden]):
                 embed.add_field(
                     name=cog.qualified_name,
                     value=', '.join(command.qualified_name for command in commands),

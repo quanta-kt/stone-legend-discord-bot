@@ -1,5 +1,5 @@
 from discord.ext.commands import(Cog, Context, CommandError,
-    BadArgument, MissingRequiredArgument, CheckFailure, UserInputError)
+    BadArgument, MissingRequiredArgument, CheckFailure, UserInputError, CommandNotFound)
 from discord import Embed, Color
 
 
@@ -29,7 +29,10 @@ class ErrorHandler(Cog):
             await ctx.send(embed=error_embed())
             return
 
-        await ctx.send('An unexpected error occured. Please report this to the ' +
+        if isinstance(error, CommandNotFound):
+            return
+
+        await ctx.send('An unexpected error occured. Please report this to the '
             + 'developer or open an issue on GitHub.')
         raise error
 
