@@ -10,6 +10,7 @@ from ..bot import StoneLegendBot
 
 
 class Verification(commands.Cog):
+    """Commands related to verification for new members"""
 
     def __init__(self, bot: StoneLegendBot):
         self.bot = bot
