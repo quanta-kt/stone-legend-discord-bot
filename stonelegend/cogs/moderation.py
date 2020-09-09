@@ -199,7 +199,6 @@ class Moderation(Cog):
         await ctx.channel.send(f'{user} has been banned\nReason: {reason}')
 
     @has_permissions(manage_messages=True)
-    @bot_has_permissions(manage_messages=True)
     @bot_has_permissions(manage_roles=True)
     @command(name='mute')
     async def mute_user(self, ctx: Context, user: Member, *, reason: str = None):
@@ -222,6 +221,21 @@ class Moderation(Cog):
         await user.add_roles(mute_role)
         await ctx.channel.send(f'{user.mention} has been muted\nReason: {reason}')
 
+    @has_permissions(manage_messages=True)
+    @bot_has_permissions(manage_roles=True)
+    @command(name='unmute')
+    async def unmute_user(self, ctx: Context, user: Member):
+        """Unmutes a muted user"""
+
+        if ctx.author.top_role <= user.top_role:
+            raise CheckFailure('Your role is not high enough to unmute that person!')
+
+        if (mute_role := utils.get(ctx.guild.roles, name="Muted")) is None \
+            or mute_role not in user.roles:
+            raise CheckFailure(f"{user} doesn't seems mute.")
+
+        await user.remove_roles(mute_role)
+        await ctx.send(f"Unmuted {user}")
 
 def setup(bot: StoneLegendBot):
     bot.add_cog(Moderation(bot))
