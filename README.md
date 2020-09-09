@@ -11,6 +11,7 @@ This project is under development and needs a good amount of work. Code cleanup 
 - [x] Welcomes new members as they join with a clean image banner with thier username and profile picture
 - [x] Create polls which end at the given time while also showing the results
 - [x] Create giveaways which selects a random participant as winner
+- [x] Captcha verification system for new users
 
 ## Planned features
 - [ ] Push Minecraft server messages to Discord
