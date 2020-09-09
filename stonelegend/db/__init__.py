@@ -116,6 +116,25 @@ SQL_SELECT_WELCOME_CHANNEL = """
 SELECT channel_id FROM welcomechannels WHERE guild_id = %s
 """
 
+SQL_CREATE_TABLE_VERIFICATION_ROLES = """
+CREATE TABLE IF NOT EXISTS verificationroles(
+    guild_id BIGINT PRIMARY KEY,
+    role_id BIGINT NOT NULL
+)
+"""
+
+SQL_UPDATE_VERIFICATION_ROLE = """
+INSERT INTO verificationroles(guild_id, role_id)
+VALUES(%(guild_id)s, %(role_id)s)
+ON DUPLICATE KEY UPDATE role_id = %(role_id)s
+"""
+
+SQL_SELECT_VERIFICATION_ROLE = """
+SELECT role_id FROM verificationroles
+WHERE guild_id = %s
+LIMIT 1
+"""
+
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
 
@@ -164,6 +183,7 @@ class Database:
                 await cur.execute(SQL_CREATE_TABLE_ANNOUNCE_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_REACT_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_WELCOME_CHANNELS)
+                await cur.execute(SQL_CREATE_TABLE_VERIFICATION_ROLES)
                 await conn.commit()
 
     async def close(self) -> None:
@@ -312,3 +332,22 @@ class Database:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_SELECT_WELCOME_CHANNEL, (guild_id,))
                 return None if cur.rowcount < 1 else (await cur.fetchone())['channel_id']
+
+    @requires_connection
+    async def update_verification_role(self, guild_id, role_id):
+        """Updates verification role id for given guild"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_UPDATE_VERIFICATION_ROLE, dict(guild_id=guild_id, role_id=role_id))
+                await conn.commit()
+                
+
+    async def get_verification_role(self, guild_id):
+        """Fetches and returns the role id set as verification role.
+        Returns None if not set"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_VERIFICATION_ROLE, (guild_id,))
+                return (await cur.fetchone())['role_id'] if cur.rowcount > 0 else None
