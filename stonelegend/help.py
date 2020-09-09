@@ -18,9 +18,13 @@ class CustomHelpCommand(HelpCommand):
         sig = (' ' + group.signature).rstrip()
         return f"/{group.name}{sig}"
 
-    async def command_not_found(self, string):
+    def command_not_found(self, string):
+        return f"No command called {string}!"
+
+    async def send_error_message(self, string):
         await self.get_destination().send(embed=Embed(
-            description=f"No command called {string}!",
+            title="Error",
+            description=string,
             color=Color.orange()
         ))
 
