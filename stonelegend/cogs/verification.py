@@ -29,8 +29,11 @@ class Verification(commands.Cog):
         await ctx.send("Updated.")
 
     @commands.command('verify')
+    @commands.bot_has_permissions(manage_roles=True)
     async def verify(self, ctx: commands.Context):
         """Verifies you by sending a captcha in your DM"""
+
+        await ctx.message.delete()
 
         target_role_id = await self.bot.db.get_verification_role(ctx.guild.id)
         if target_role_id is None or (target_role := ctx.guild.get_role(target_role_id)) is None:
@@ -44,7 +47,8 @@ class Verification(commands.Cog):
                 file=discord.File(self._captcha_builder.generate(challenge), 'challenge.png'))
         except discord.Forbidden:
             await ctx.send(f"{ctx.author.mention} I can't message you because your DMs are turned off\n" \
-                + f"Please enable DMs from this server and try again!")
+                + f"Please enable DMs from this server and try again!",
+                delete_after=60)
             return
 
         def check(message: discord.Message):
