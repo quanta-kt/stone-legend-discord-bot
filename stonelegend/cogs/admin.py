@@ -13,7 +13,7 @@ def requires_admin():
     """Decorator for commands that require to be an admin"""
 
     async def predicate(ctx: Context):
-        if ctx.author.id in admins:
+        if ctx.author.id not in admins:
             raise errors.CommandNotFound()
         return True
     return check(predicate)
