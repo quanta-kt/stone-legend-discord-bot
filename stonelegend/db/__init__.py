@@ -135,6 +135,25 @@ WHERE guild_id = %s
 LIMIT 1
 """
 
+SQL_CREATE_TABLE_LOGGING_CHANNELS = """
+CREATE TABLE loggingchannels(
+    guild_id BIGINT PRIMARY KEY,
+    channel_id BIGINT NOT NULL
+)
+"""
+
+SQL_UPDATE_LOGGING_CHANNEL = """
+INSERT INTO loggingchannels(guild_id, channel_id)
+VALUES(%(guild_id)s, %(channel_id)s)
+ON DUPLICATE KEY UPDATE channel_id = %(channel_id)s
+"""
+
+SQL_SELECT_LOGGING_CHANNEL = """
+SELECT channel_id FROM loggingchannels
+WHERE guild_id = %s
+LIMIT 1
+"""
+
 def requires_connection(decorated):
     """A decorator for Database methods which should not be called before calling Database.connect"""
 
@@ -184,6 +203,7 @@ class Database:
                 await cur.execute(SQL_CREATE_TABLE_REACT_ROLES)
                 await cur.execute(SQL_CREATE_TABLE_WELCOME_CHANNELS)
                 await cur.execute(SQL_CREATE_TABLE_VERIFICATION_ROLES)
+                await cur.execute(SQL_CREATE_TABLE_LOGGING_CHANNELS)
                 await conn.commit()
 
     async def close(self) -> None:
@@ -351,3 +371,22 @@ class Database:
             async with conn.cursor() as cur:
                 await cur.execute(SQL_SELECT_VERIFICATION_ROLE, (guild_id,))
                 return (await cur.fetchone())['role_id'] if cur.rowcount > 0 else None
+
+    @requires_connection
+    async def update_logging_channel(self, guild_id, channel_id) -> None:
+        """Updates channel_id for given guild"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_UPDATE_LOGGING_CHANNEL, \
+                    dict(guild_id=guild_id, channel_id=channel_id))
+                await conn.commit()
+
+    @requires_connection
+    async def get_logging_channel(self, guild_id) -> Optional[int]:
+        """Fetches and returns logging channel id for guild (if any)"""
+
+        async with self._pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(SQL_SELECT_LOGGING_CHANNEL, (guild_id,))
+                return (await cur.fetchone())['channel_id'] if cur.rowcount > 0 else None
