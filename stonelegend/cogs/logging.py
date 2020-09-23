@@ -1,3 +1,4 @@
+from operator import add
 import discord
 from discord.ext import commands
 
@@ -90,6 +91,41 @@ class Logging(commands.Cog):
         await log_channel.send(embed = discord.Embed(
             title = payload.data['author']['username'] + '#' + payload.data['author']['discriminator'],
             description=description))
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+
+        log_channel_id = await self.logging_channels_cache \
+            .get_logging_channel(after.guild.id)
+        if log_channel_id is None:
+            return
+
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        if before.nick != after.nick:
+            await log_channel.send(embed=discord.Embed(title=str(after), 
+                description="Nickname changed\n\n"
+                    + f"**Before**: {before.nick or str(before)}\n"
+                    + f"**After:** {after.nick or str(after)}",
+                color=discord.Color.green()))
+
+        old_roles = set(before.roles)
+        new_roles = set(after.roles)
+        removed_roles = old_roles - new_roles
+        added_roles = new_roles - old_roles
+
+        if removed_roles:
+            await log_channel.send(embed=discord.Embed(title=str(after),
+                description="Roles removed\n\n"
+                    + ", ".join(role.mention for role in removed_roles),
+                color=discord.Color.green()))
+
+        if added_roles:
+            await log_channel.send(embed=discord.Embed(title=str(after),
+                description="Roles added\n\n"
+                    + ", ".join(role.mention for role in added_roles),
+                color=discord.Color.green()))
 
     @commands.command(name='enablelogs')
     @commands.has_permissions(manage_guild=True)
