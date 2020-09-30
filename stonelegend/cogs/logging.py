@@ -43,9 +43,10 @@ class Logging(commands.Cog):
             await self.bot.fetch_channel(log_channel_id)
 
         embed = discord.Embed(title=str(member),
-            description="Member joined",
+            description=f"Member joined\n{member.mention}",
             color=discord.Color.green(),
-            timestamp=datetime.datetime.today())
+            timestamp=datetime.datetime.today()) \
+                .set_footer(text=f"ID: {member.id}")
 
         await log_channel.send(embed=embed)
 
@@ -61,8 +62,9 @@ class Logging(commands.Cog):
 
         embed = discord.Embed(title=str(member),
             description="Member left",
-            color=discord.Color.green(),
-            timestamp=datetime.datetime.today())
+            color=discord.Color.red(),
+            timestamp=datetime.datetime.today()) \
+                .set_footer(text=f"ID: {member.id}")
 
         await log_channel.send(embed=embed)
 
