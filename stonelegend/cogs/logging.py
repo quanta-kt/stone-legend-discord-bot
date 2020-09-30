@@ -1,6 +1,7 @@
 from operator import add
 import discord
 from discord.ext import commands
+import datetime
 
 from ..bot import StoneLegendBot
 
@@ -30,6 +31,40 @@ class Logging(commands.Cog):
     def __init__(self, bot: StoneLegendBot):
         self.bot = bot
         self.logging_channels_cache = LoggingChannelCache(bot)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        
+        log_channel_id = await self.logging_channels_cache.get_logging_channel(member.guild.id)
+        if log_channel_id is None:
+            return
+
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        embed = discord.Embed(title=str(member),
+            description="Member joined",
+            color=discord.Color.green(),
+            timestamp=datetime.datetime.today())
+
+        await log_channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+
+        log_channel_id = await self.logging_channels_cache.get_logging_channel(member.guild.id)
+        if log_channel_id is None:
+            return
+
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        embed = discord.Embed(title=str(member),
+            description="Member left",
+            color=discord.Color.green(),
+            timestamp=datetime.datetime.today())
+
+        await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
