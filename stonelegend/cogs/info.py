@@ -1,9 +1,13 @@
-from discord.ext.commands import Cog, command, Bot, Context
+from discord.ext.commands import Cog, command, Context
 from discord import Embed, Color
-import aiohttp
+
+from ..bot import StoneLegendBot
 
 
 class Info(Cog):
+
+    def __init__(self, bot: StoneLegendBot) -> None:
+        self.bot = bot
 
     @command(name='store', aliases=('shop', 'market'))
     async def store(self, ctx: Context):
@@ -33,9 +37,8 @@ class Info(Cog):
             inline=False
         )
 
-        async with aiohttp.ClientSession() as client:
-            resp = await client.get("https://api.mcsrvstat.us/2/play.stonelegend.net:19145")
-            data = await resp.json()
+        resp = await self.bot.worker_http_session.get("https://api.mcsrvstat.us/2/play.stonelegend.net:19145")
+        data = await resp.json()
 
         embed.add_field(
             name='**Status**',
@@ -56,9 +59,8 @@ class Info(Cog):
     async def players_list(self, ctx: Context):
         """Lists the online players in the MineCraft server"""
 
-        async with aiohttp.ClientSession() as client:
-            resp = await client.get("https://api.mcsrvstat.us/2/play.stonelegend.net:19145")
-            data = await resp.json()
+        resp = await self.bot.worker_http_session.get("https://api.mcsrvstat.us/2/play.stonelegend.net:19145")
+        data = await resp.json()
 
         if not data['online']:
             await ctx.send(embed=Embed(
@@ -80,5 +82,5 @@ class Info(Cog):
         ))
 
 
-def setup(bot: Bot):
-    bot.add_cog(Info())
+def setup(bot: StoneLegendBot):
+    bot.add_cog(Info(bot))
