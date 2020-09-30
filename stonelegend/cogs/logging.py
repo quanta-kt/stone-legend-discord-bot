@@ -1,4 +1,3 @@
-from operator import add
 import discord
 from discord.ext import commands
 import datetime
