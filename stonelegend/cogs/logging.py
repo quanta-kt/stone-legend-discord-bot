@@ -68,6 +68,121 @@ class Logging(commands.Cog):
         await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel: discord.abc.GuildChannel):
+
+        log_channel_id = await self.logging_channels_cache.get_logging_channel(channel.guild.id)
+        if log_channel_id is None:
+            return
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        if isinstance(channel, discord.TextChannel):
+            channnel_type = "Text channel"
+        elif isinstance(channel, discord.VoiceChannel):
+            channnel_type = "Voice channel"
+        else:
+            channel_type = "Category"
+
+        embed = discord.Embed(title=f"{channel_type} created",
+            description=f"{channel_type} {channel.mention} created",
+            color=discord.Color.green()) \
+                .set_timestamp(datetime.datetime.now())
+
+        await log_channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+
+        log_channel_id = await self.logging_channels_cache.get_logging_channel(channel.guild.id)
+        if log_channel_id is None:
+            return
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        if isinstance(channel, discord.TextChannel):
+            channnel_type = "Text channel"
+        elif isinstance(channel, discord.VoiceChannel):
+            channnel_type = "Voice channel"
+        else:
+            channel_type = "Channel category"
+
+        embed = discord.Embed(title=f"{channel_type} deleted",
+            description=f"{channel_type} {channel} deleted",
+            color=discord.Color.red() \
+                .set_timestamp(datetime.datetime.now()))
+
+        await log_channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel):
+
+        log_channel_id = await self.logging_channels_cache.get_logging_channel(after.guild.id)
+        if log_channel_id is None:
+            return
+        log_channel = self.bot.get_channel(log_channel_id) or \
+            await self.bot.fetch_channel(log_channel_id)
+
+        name_diff = None if before.name == after.name else \
+            f"Before: {before.name}\nAfter: {after.name}"
+
+        topic_diff = None if not isinstance(after, discord.TextChannel) or \
+            before.topic == after.topic else \
+                f"Before: {before.topic}\nAfter: {after.topic}"
+
+        if name_diff is not None or topic_diff is not None:
+            embed = discord.Embed(title="Channel updated",
+                description=f"{after.mention} updated\n\n",
+                color=discord.Color.green())
+
+            if name_diff is not None:
+                embed.add_field(name="Changed name", value=name_diff)
+            if topic_diff is not None:
+                embed.add_field(name="Changed topic", value=topic_diff)
+
+            await log_channel.send(embed=embed)
+
+
+        # Calculate permission overwrite diff
+        def diff_overrwrites(a, b):
+
+            for target, overwrite in a.items():
+                old_overwrite = b.get(target)
+                if overwrite == old_overwrite:
+                    continue
+
+                if old_overwrite is None:
+                    old_overwrite_s = {}
+                else:
+                    old_overwrite_s = {perm: value for perm, value in iter(old_overwrite) if value is not None}
+
+                allowed = tuple(perm \
+                    for perm, value in iter(overwrite) \
+                        if value is not None and old_overwrite_s.get(perm) != value and value)
+                denied = tuple(perm \
+                    for perm, value in iter(overwrite) \
+                        if value is not None and old_overwrite_s.get(perm) != value and not value)
+
+                if not allowed and not denied:
+                    continue
+
+                embed = discord.Embed(
+                    description=f"**Channel permissions updated: {after.mention}**\n"
+                        + f"Edited permssions for `{target}`\n",
+                    color=discord.Color.green())
+
+                if allowed:
+                    embed.add_field(name="Allowed permissions",
+                        value=", ".join(i.replace('_', ' ').title() for i in allowed))
+                if denied:
+                    embed.add_field(name="Denied permissions",
+                        value=", ".join(i.replace('_', ' ').title() for i in denied))
+
+                yield embed
+
+        for embed in diff_overrwrites(after.overwrites, before.overwrites):
+            await log_channel.send(embed=embed)
+
+    @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
 
         log_channel_id = await self.logging_channels_cache.get_logging_channel(payload.guild_id)
